@@ -117,72 +117,156 @@ public class GaleShapley {
 		    	
 			   	i++;
 		    	
-		    	}
-	    	
-	    	
-//	    	 Map<String, ArrayList<String>> employeePrefers = new HashMap<String, ArrayList<String>>();	    	
-//		    	
-//		    	int i = 0;
-//		    	while( i < employees.size()) {
-//		    		
-//		    	List<String> studentsFromEFile = new ArrayList<String>();
-//			   	studentsFromEFile = readRows(filename1, employees.get(i));
-//			   	employeePrefers.put(employees.get(i), (ArrayList<String>) studentsFromEFile);
-//
-//		    		
-//		    		i++;
-//		    	
-//		    	}
-	    	 
+		    	}	 
 	    	 
 	    	 return Prefers;
 	    	
 	    }
+	    
+	    public static Map<String, String> match(List<String> employers, Map<String, ArrayList<String>> employerPrefers, Map<String, ArrayList<String>> studentPrefers) {
+	       
+	    	Map<String, String> matchedTo = new TreeMap<String, String>();
+	        
+	    	List<String> freeEmployers = new LinkedList<String>();
+	        
+	    	freeEmployers.addAll(employers);
+	        
+	        while(!freeEmployers.isEmpty()){
+	            
+	        	String thisEmployer = freeEmployers.remove(0); 
+	            List<String> thisEmployerPrefers = employerPrefers.get(thisEmployer);
+	            
+	            for(String student:thisEmployerPrefers){
+	                
+	            	if(matchedTo.get(student) == null){
+	            		
+	                    matchedTo.put(student, thisEmployer); 
+	                    break;
+	                    
+	                }else{
+	                   
+	                	String otherEmployer = matchedTo.get(student);
+	                    List<String> thisStudentPrefers = studentPrefers.get(student);
+	                  
+	                    if(thisStudentPrefers.indexOf(thisEmployer) < thisStudentPrefers.indexOf(otherEmployer)){
+	                        
+	                    	matchedTo.put(student, thisEmployer);
+	                        freeEmployers.add(otherEmployer);
+	                        
+	                        break;
+	                    }
+	                }
+	            }
+	        }
+	        return matchedTo;
+	    }
+	    
+	    public static boolean checkMatches(List<String> employers, List<String> students,
+	            Map<String, String> matches, Map<String, ArrayList<String>> employerPrefers,
+	            Map<String, ArrayList<String>> studentPrefers) {
+	        if(!matches.keySet().containsAll(students)){
+	            return false;
+	        }
+	 
+	        if(!matches.values().containsAll(employers)){
+	            return false;
+	        }
+	 
+	        Map<String, String> invertedMatches = new TreeMap<String, String>();
+	        for(Map.Entry<String, String> couple:matches.entrySet()){
+	            invertedMatches.put(couple.getValue(), couple.getKey());
+	        }
+	 
+	        for(Map.Entry<String, String> couple:matches.entrySet()){
+	            List<String> stuPrefers = studentPrefers.get(couple.getKey());
+	            List<String> stuLikesBetter = new LinkedList<String>();
+	            stuLikesBetter.addAll(stuPrefers.subList(0, stuPrefers.indexOf(couple.getValue())));
+	            List<String> empPrefers = employerPrefers.get(couple.getValue());
+	            List<String> empLikesBetter = new LinkedList<String>();
+	            empLikesBetter.addAll(empPrefers.subList(0, empPrefers.indexOf(couple.getKey())));
+	 
+	            for(String employer : stuLikesBetter){
+	                String employerMatch = invertedMatches.get(employer);
+	                List<String> thisEmpPrefers = employerPrefers.get(employer);
+	                if(thisEmpPrefers.indexOf(employerMatch) >
+	                        thisEmpPrefers.indexOf(couple.getKey())){
+	                    System.out.printf("%s likes %s better than %s and %s"
+	                            + " likes %s better than their current partner\n",
+	                       couple.getKey(), employer, couple.getValue(),
+	                       employer, couple.getKey());
+	                    return false;
+	                }
+	            }
+	 
+	            for(String student : empLikesBetter){
+	                String stuMatch = matches.get(student);
+	                List<String> thisStuPrefers = studentPrefers.get(student);
+	                if(thisStuPrefers.indexOf(stuMatch) >
+	                        thisStuPrefers.indexOf(couple.getValue())){
+	                    System.out.printf("%s prefers %s to %s and %s"
+	                            + " prefers %s to their current match\n",
+	                       couple.getValue(), student, couple.getKey(),
+	                        student, couple.getValue());
+	                    return false;
+	                }
+	            }
+	        }
+	        return true;
+	    }
+	 
+	 
 	    
 	    
 	  
 	    /** main function **/
 	    public static void main(String[] args) 
 	    {
-	    	List<String> employees = new ArrayList<String>();
+	    	List<String> employers = new ArrayList<String>();
 	    	List<String> students = new ArrayList<String>();
 	    	
 	    	String filename1 = "/Users/ayeshaabid/Downloads/StableMatching-master/coop_e_10x10.csv";
 	    	String filename2 = "/Users/ayeshaabid/Downloads/StableMatching-master/coop_s_10x10.csv";
 
-	    	employees = readColumnOne(filename1);
+	    	employers = readColumnOne(filename1);
 	    	students = readColumnOne(filename2);
 	    	
-	    	Map<String, ArrayList<String>> employeePrefers = new HashMap<String, ArrayList<String>>();	
+	    	Map<String, ArrayList<String>> employerPrefers = new HashMap<String, ArrayList<String>>();	
 	    	Map<String, ArrayList<String>> studentPrefers = new HashMap<String, ArrayList<String>>();	
 	    	
-	    	employeePrefers = Prefers(employees, filename1);
+	    	employerPrefers = Prefers(employers, filename1);
 	    	studentPrefers = Prefers(students, filename2);
-
+	    	
+	    	
+	    	Map<String, String> matches = new HashMap<String, String>();
+	    	matches = match(employers, employerPrefers, studentPrefers);
+	    	
+	        for(Map.Entry<String, String> couple:matches.entrySet()){
+	            System.out.println(
+	                    couple.getKey() + " is matched to " + couple.getValue());
+	        }
+	        if(checkMatches(employers, students, matches, employerPrefers, studentPrefers)){
+	            System.out.println("Matches are stable");
+	        }else{
+	            System.out.println("Matches are unstable");
+	        }
+	        String tmp = matches.get(students.get(0));
+	        matches.put(students.get(0), matches.get(students.get(1)));
+	        matches.put(students.get(1), tmp);
+	        System.out.println(
+	                students.get(0) +" and " + students.get(1) + " have switched employers");
+	        if(checkMatches(employers, students, matches, employerPrefers, studentPrefers)){
+	            System.out.println("Matches are stable");
+	        }else{
+	            System.out.println("Matches are unstable");
+	        }
+	    	
+	    	
+	    	
 
 
 	    }
 	    	
-//	        System.out.println("Gale Shapley Marriage Algorithm\n");
-//	        /** list of men **/
-//	        String[] m = {"M1", "M2", "M3", "M4", "M5"};
-//	        /** list of women **/
-//	        String[] w = {"W1", "W2", "W3", "W4", "W5"};
-//	 
-//	        /** men preference **/
-//	        String[][] mp = {{"W5", "W2", "W3", "W4", "W1"}, 
-//	                         {"W2", "W5", "W1", "W3", "W4"}, 
-//	                         {"W4", "W3", "W2", "W1", "W5"}, 
-//	                         {"W1", "W2", "W3", "W4", "W5"},
-//	                         {"W5", "W2", "W3", "W4", "W1"}};
-//	        /** women preference **/                      
-//	        String[][] wp = {{"M5", "M3", "M4", "M1", "M2"}, 
-//	                         {"M1", "M2", "M3", "M5", "M4"}, 
-//	                         {"M4", "M5", "M3", "M2", "M1"},
-//	                         {"M5", "M2", "M1", "M4", "M3"}, 
-//	                         {"M2", "M1", "M4", "M3", "M5"}};
-//	 
-//	        GaleShapley gs = new GaleShapley(m, w, mp, wp);                        
+                       
 	  
 
 }
