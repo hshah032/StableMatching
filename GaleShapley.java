@@ -1,7 +1,9 @@
 import java.io.BufferedReader;
 import java.io.FileNotFoundException;
 import java.io.FileReader;
+import java.io.FileWriter;
 import java.io.IOException;
+import java.io.Writer;
 import java.util.*;
 
 
@@ -237,31 +239,22 @@ public class GaleShapley {
 	    	studentPrefers = Prefers(students, filename2);
 	    	
 	    	
-	    	Map<String, String> matches = new HashMap<String, String>();
-	    	matches = match(employers, employerPrefers, studentPrefers);
+	    	Map<String, String> matches = match(employers, employerPrefers, studentPrefers);
+       
+	    	String eol = System.getProperty("line.separator");
+
+	    	try (Writer writer = new FileWriter("matches_java_nxn.csv")) {
+	    	  for (Map.Entry<String, String> entry : matches.entrySet()) {
+	    	    writer.append(entry.getKey())
+	    	          .append(',')
+	    	          .append(entry.getValue())
+	    	          .append(eol);
+	    	  }
+	    	} catch (IOException ex) {
+	    	  ex.printStackTrace(System.err);
+	    	}
 	    	
-	        for(Map.Entry<String, String> couple:matches.entrySet()){
-	            System.out.println(
-	                    couple.getKey() + " is matched to " + couple.getValue());
-	        }
-	        if(checkMatches(employers, students, matches, employerPrefers, studentPrefers)){
-	            System.out.println("Matches are stable");
-	        }else{
-	            System.out.println("Matches are unstable");
-	        }
-	        String tmp = matches.get(students.get(0));
-	        matches.put(students.get(0), matches.get(students.get(1)));
-	        matches.put(students.get(1), tmp);
-	        System.out.println(
-	                students.get(0) +" and " + students.get(1) + " have switched employers");
-	        if(checkMatches(employers, students, matches, employerPrefers, studentPrefers)){
-	            System.out.println("Matches are stable");
-	        }else{
-	            System.out.println("Matches are unstable");
-	        }
-	    	
-	    	
-	    	
+	    
 
 
 	    }
