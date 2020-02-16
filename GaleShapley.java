@@ -2,8 +2,7 @@ import java.io.BufferedReader;
 import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.List;
+import java.util.*;
 
 
 /**
@@ -106,14 +105,14 @@ public class GaleShapley {
 	        }
 	    }
 	    
-	    public static ArrayList<String> readFromFile(String filename) {
+	    public static List<String> readColumnOne(String filename) {
 	    	
 
 	        String csvFile = filename;
 	        BufferedReader br = null;
 	        String line = "";
 	        String cvsSplitBy = ",";
-	        ArrayList<String> data = new ArrayList<String>( );
+	        List<String> data = new ArrayList<String>( );
 
 	        try {
 
@@ -145,19 +144,123 @@ public class GaleShapley {
 	        return data;
 	    	
 	    }
+	    
+	    public static List<String> readRows(String filename, String key) {
+	    	
+
+	        String csvFile = filename;
+	        BufferedReader br = null;
+	        String line = "";
+	        String cvsSplitBy = ",";
+	        List<String> data = new ArrayList<String>();
+
+	        try {
+
+	            br = new BufferedReader(new FileReader(csvFile));
+	            
+
+	            while ((line = br.readLine()) != null) {
+
+	                // use comma as separator
+	                String[] allData = line.split(cvsSplitBy);
+		            
+		            int i = 1;
+		            
+		            if(allData[0].equals(key)) {
+		            	
+		            	while( i < allData.length) {
+		            		
+		            		data.add(allData[i]);
+		            		i++;
+		            		
+		            	}
+		            }
+
+	            }
+
+	        } catch (FileNotFoundException e) {
+	            e.printStackTrace(); 
+	        } catch (IOException e) {
+	            e.printStackTrace();
+	        } finally {
+	            if (br != null) {
+	                try {
+	                    br.close();
+	                } catch (IOException e) {
+	                    e.printStackTrace();
+	                }
+	            }
+	        }
+	        
+	        return data;
+	    	
+	    }
+	    
+	    
+	  
 	    /** main function **/
 	    public static void main(String[] args) 
 	    {
-	    	ArrayList<String> employees = new ArrayList<String>();
-	    	ArrayList<String> students = new ArrayList<String>();
+	    	List<String> employees = new ArrayList<String>();
+	    	List<String> students = new ArrayList<String>();
 	    	
-	    	employees = readFromFile("/Users/ayeshaabid/Downloads/StableMatching-master/coop_e_10x10.csv");
-	    	students = readFromFile("/Users/ayeshaabid/Downloads/StableMatching-master/coop_s_10x10.csv");
+	    	String filename1 = "/Users/ayeshaabid/Downloads/StableMatching-master/coop_e_10x10.csv";
+	    	String filename2 = "/Users/ayeshaabid/Downloads/StableMatching-master/coop_s_10x10.csv";
 
+	    	employees = readColumnOne(filename1);
+	    	students = readColumnOne(filename2);
+	    	
+	    	Map<String, ArrayList<String>> employeePrefers = new HashMap<String, ArrayList<String>>();	    	
+	    	
+	    	int i = 0;
+	    	while( i < employees.size()) {
+	    		
+	    		List<String> studentsFromEFile = new ArrayList<String>();
+		    	studentsFromEFile = readRows(filename1, employees.get(i));
+		    	employeePrefers.put(employees.get(i), (ArrayList<String>) studentsFromEFile);
+	    		
+	    	}
+	    	
+//	    	System.out.println(Arrays.asList(employeePrefers));
+	    	System.out.println("hi");
+
+	    	
+//	    	static Map<String, ArrayList<String>> employeePrefers = 
+//	    			new HashMap<String, ArrayList<String>>(){{
+//	    		        put(employees.get(0), studentsFromEEfile
+//	    		            Arrays.asList("abi", "eve", "cath", "ivy", "jan", "dee", "fay",
+//	    		            "bea", "hope", "gay"));
+//	    		        put("bob",
+//	    		            Arrays.asList("cath", "hope", "abi", "dee", "eve", "fay", "bea",
+//	    		            "jan", "ivy", "gay"));
+//	    		        put("col",
+//	    		            Arrays.asList("hope", "eve", "abi", "dee", "bea", "fay", "ivy",
+//	    		            "gay", "cath", "jan"));
+//	    		        put("dan",
+//	    		            Arrays.asList("ivy", "fay", "dee", "gay", "hope", "eve", "jan",
+//	    		            "bea", "cath", "abi"));
+//	    		        put("ed",
+//	    		            Arrays.asList("jan", "dee", "bea", "cath", "fay", "eve", "abi",
+//	    		            "ivy", "hope", "gay"));
+//	    		        put("fred",
+//	    		            Arrays.asList("bea", "abi", "dee", "gay", "eve", "ivy", "cath",
+//	    		            "jan", "hope", "fay"));
+//	    		        put("gav",
+//	    		            Arrays.asList("gay", "eve", "ivy", "bea", "cath", "abi", "dee",
+//	    		            "hope", "jan", "fay"));
+//	    		        put("hal",
+//	    		            Arrays.asList("abi", "eve", "hope", "fay", "ivy", "cath", "jan",
+//	    		            "bea", "gay", "dee"));
+//	    		        put("ian",
+//	    		            Arrays.asList("hope", "cath", "dee", "gay", "bea", "abi", "fay",
+//	    		            "ivy", "jan", "eve"));
+//	    		        put("jon",
+//	    		            Arrays.asList("abi", "fay", "jan", "gay", "eve", "bea", "dee",
+//	    		            "cath", "ivy", "hope"));
+//	    		    }};
 
 	        
-	        System.out.println(employees);
-	        System.out.println(students);
+	        
 
 
 	    }
